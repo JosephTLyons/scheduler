@@ -35,14 +35,14 @@ impl Scheduler {
         self.scheduler_state = SchedulerState::Running;
 
         loop {
-            for process in &mut self.process_table {
-                process.set_state(ProcessState::Running);
+            for i in 0..self.process_table.len() {
+                self.process_table[i].set_state(ProcessState::Running);
 
                 // Have thread do work here in place of printing the details
                 self.print_all_process_details();
                 println!();
                 thread::sleep(time::Duration::from_millis(1000));
-                process.set_state(ProcessState::Ready);
+                self.process_table[i].set_state(ProcessState::Ready);
 
                 match self.scheduler_state {
                     SchedulerState::Paused => {
