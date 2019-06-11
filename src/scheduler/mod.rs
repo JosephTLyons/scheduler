@@ -4,11 +4,16 @@ use std::{thread, time};
 pub use process::ProcessState;
 use process::Process;
 
+enum SchedulerState {
+    Running,
+    Stopped
+}
+
 pub struct Scheduler {
     process_table: Vec<Process>,
     number_of_processs: u32,
     current_running_process_id: u32,
-    is_running: bool,
+    scheduler_state: SchedulerState,
 }
 
 impl Scheduler {
@@ -17,7 +22,7 @@ impl Scheduler {
             process_table: Vec::new(),
             number_of_processs: 0,
             current_running_process_id: 0,
-            is_running: false,
+            scheduler_state: SchedulerState::Stopped,
         }
     }
 
@@ -26,7 +31,7 @@ impl Scheduler {
         // thread::spawn(move |self| {
         // });
 
-        self.is_running = true;
+        self.scheduler_state = SchedulerState::Running;
 
         loop {
             for process in &mut self.process_table {
@@ -36,9 +41,15 @@ impl Scheduler {
                 thread::sleep(time::Duration::from_millis(1000));
                 process.set_state(ProcessState::Ready);
 
-                if ! self.is_running {
+                if let SchedulerState::Stopped = self.scheduler_state {
                     return;
-                }
+                };
+
+                // Same as `if let` statement above
+                // match self.scheduler_state {
+                //     SchedulerState::Stopped => return,
+                //     _ => {}
+                // }
             }
         }
     }
