@@ -1,6 +1,9 @@
-mod process_states;
-
-pub use process_states::ProcessState;
+pub enum ProcessState {
+    Ready,
+    Running,
+    Blocked,
+    Dead,
+}
 
 pub struct Process {
     process_state: ProcessState,
