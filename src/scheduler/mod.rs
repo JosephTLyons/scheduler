@@ -22,6 +22,10 @@ impl Scheduler {
     }
 
     pub fn start(&mut self) {
+        // Launch a new thread that runs this function, let main thread go back to main
+        // thread::spawn(move |self| {
+        // });
+
         self.is_running = true;
 
         loop {
