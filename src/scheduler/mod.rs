@@ -6,12 +6,13 @@ use process::Process;
 
 enum SchedulerState {
     Running,
+    Paused,
     Stopped
 }
 
 pub struct Scheduler {
     process_table: Vec<Process>,
-    number_of_processs: u32,
+    total_number_of_processes: u32,
     current_running_process_id: u32,
     scheduler_state: SchedulerState,
 }
@@ -20,7 +21,7 @@ impl Scheduler {
     pub fn new() -> Self {
         Scheduler {
             process_table: Vec::new(),
-            number_of_processs: 0,
+            total_number_of_processes: 0,
             current_running_process_id: 0,
             scheduler_state: SchedulerState::Stopped,
         }
@@ -36,28 +37,31 @@ impl Scheduler {
         loop {
             for process in &mut self.process_table {
                 process.set_state(ProcessState::Running);
+
+                // Have thread do work here in place of printing the details
                 self.print_all_process_details();
                 println!();
                 thread::sleep(time::Duration::from_millis(1000));
                 process.set_state(ProcessState::Ready);
 
-                if let SchedulerState::Stopped = self.scheduler_state {
-                    return;
-                };
-
-                // Same as `if let` statement above
-                // match self.scheduler_state {
-                //     SchedulerState::Stopped => return,
-                //     _ => {}
-                // }
+                match self.scheduler_state {
+                    SchedulerState::Paused => {
+                        // Pause thread or block it with a mutex
+                    }
+                    SchedulerState::Stopped => return,
+                    _ => {},
+                }
             }
         }
     }
 
+    pub fn pause(&mut self) {
+        self.scheduler_state = SchedulerState::Paused;
+    }
+
     pub fn add_process(&mut self) {
-        self.process_table
-            .push(Process::new(ProcessState::Ready, self.number_of_processs));
-        self.number_of_processs += 1;
+        self.process_table.push(Process::new(ProcessState::Ready, self.total_number_of_processes));
+        self.total_number_of_processes += 1;
     }
 
     pub fn print_all_process_details(&self) {
@@ -78,7 +82,7 @@ impl Scheduler {
         false
     }
 
-    pub fn get_number_of_processs(&self) -> usize {
+    pub fn get_number_of_processes_in_table(&self) -> usize {
         self.process_table.len()
     }
 }
