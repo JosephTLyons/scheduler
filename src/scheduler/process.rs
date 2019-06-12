@@ -1,3 +1,6 @@
+use std::thread::*;
+
+#[derive(Clone)]
 pub enum ProcessState {
     Ready,
     Running,
@@ -8,6 +11,7 @@ pub enum ProcessState {
 pub struct Process {
     process_state: ProcessState,
     process_id: u32,
+    thread_handle_option: Option<JoinHandle<()>>,
 }
 
 impl Process {
@@ -15,8 +19,27 @@ impl Process {
         Process {
             process_state: state,
             process_id: id,
+            thread_handle_option: None,
         }
     }
+
+    pub fn launch(&mut self) {
+        self.thread_handle_option =  Some(spawn(|| println!("Hello")));
+    }
+
+    pub fn pause() {
+    }
+
+    pub fn kill(&mut self) {
+        // Switch this to a non-panicking method
+        // self.thread_handle_option.expect("Doesn't have a running thread").thread().
+    }
+
+    // pub fn join(&self) {
+    //     if let Some(handle) = self.thread_handle_option {
+    //         handle.join();
+    //     }
+    // }
 
     pub fn print_process_details(&self) {
         print!("Process {}: ", self.process_id);
@@ -35,5 +58,9 @@ impl Process {
 
     pub fn set_state(&mut self, state: ProcessState) {
         self.process_state = state;
+    }
+
+    pub fn get_state(&self) -> ProcessState {
+        self.process_state.clone()
     }
 }
