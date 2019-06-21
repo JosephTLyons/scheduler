@@ -1,4 +1,10 @@
-use std::thread::*;
+pub mod worker_functions;
+
+use std::sync::Arc;
+use worker_functions::*;
+use std::thread::{self, *};
+use std::time;
+use std::sync::atomic::AtomicBool;
 
 #[derive(Clone)]
 pub enum ProcessState {
@@ -8,31 +14,37 @@ pub enum ProcessState {
     Dead,
 }
 
-pub struct Process {
+pub struct ProcessBlock  {
     process_state: ProcessState,
     process_id: u32,
-    thread_handle_option: Option<JoinHandle<()>>,
+    thread_handle_option: Option<JoinHandle<(fn())>>,
+    should_run_atomic_bool: Arc<AtomicBool>,
+    func: fn() -> (),
 }
 
-impl Process {
-    pub fn new(state: ProcessState, id: u32) -> Self {
-        Process {
+impl ProcessBlock {
+    pub fn new(state: ProcessState, id: u32, f: fn()) -> Self {
+        ProcessBlock {
             process_state: state,
             process_id: id,
             thread_handle_option: None,
+            should_run_atomic_bool: Arc::new(AtomicBool::new(false)),
+            func: f,
         }
     }
 
     pub fn launch(&mut self) {
-        self.thread_handle_option =  Some(spawn(|| println!("Hello")));
+        self.thread_handle_option = Some(thread::spawn(|| self.func));
     }
 
     pub fn pause() {
+
     }
 
     pub fn kill(&mut self) {
         // Switch this to a non-panicking method
         // self.thread_handle_option.expect("Doesn't have a running thread").thread().
+        self.process_state = ProcessState::Dead;
     }
 
     // pub fn join(&self) {

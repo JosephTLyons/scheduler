@@ -1,10 +1,12 @@
-pub mod process;
+pub mod process_block;
 
-use process::Process;
-pub use process::ProcessState;
+use process_block::worker_functions;
+use process_block::ProcessBlock;
+pub use process_block::ProcessState;
 use std::thread::JoinHandle;
 // use std::thread::Thread;
 use std::{thread, time};
+use std::sync::atomic::AtomicBool;
 
 enum SchedulerState {
     Running,
@@ -13,7 +15,7 @@ enum SchedulerState {
 }
 
 pub struct Scheduler {
-    process_table: Vec<Process>,
+    process_table: Vec<ProcessBlock>,
     total_number_of_processes: u32,
     current_running_process_id: u32,
     scheduler_state: SchedulerState,
@@ -33,7 +35,7 @@ impl Scheduler {
         }
     }
 
-    pub fn start(mut self) {
+    pub fn start(&mut self) {
         // self.scheduler_thread_handle_option = Some(thread::current());
         self.scheduler_state = SchedulerState::Running;
 
@@ -43,8 +45,6 @@ impl Scheduler {
             // for process in &self.process_table {
             for i in 0..self.process_table.len() {
                 self.process_table[i].set_state(ProcessState::Running);
-
-                self.process_table[i].launch();
 
                 // Delete this when process launching works
                 self.print_all_process_details();
@@ -64,7 +64,7 @@ impl Scheduler {
                         // Pause this thread or block it with a mutex
                     }
                     SchedulerState::Stopped => return,
-                    SchedulerState::Running => {}
+                    SchedulerState::Running => {},
                 }
             }
         }
@@ -85,11 +85,25 @@ impl Scheduler {
     // }
 
     pub fn add_process(&mut self) {
-        self.process_table.push(Process::new(
+        self.process_table.push(ProcessBlock::new(
             ProcessState::Ready,
             self.total_number_of_processes,
+            worker_functions::loop_print_text_1,
         ));
+
         self.total_number_of_processes += 1;
+
+        // The thread shouldn't run the minute it is a launched, it should only run when the
+        // scheduler puts it in the Running state
+        let last_proc = self.process_table.len() - 1;
+
+        if self.process_table[last_proc].get_process_id() % 2 == 0 {
+            self.process_table[last_proc].launch();
+        }
+
+        else {
+            self.process_table[last_proc].launch();
+        }
     }
 
     pub fn print_all_process_details(&self) {
