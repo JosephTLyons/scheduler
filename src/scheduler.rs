@@ -46,6 +46,7 @@ impl Scheduler {
             for i in 0..self.process_table.len() {
                 self.process_table[i].set_state(ProcessState::Running);
 
+
                 // Delete this when process launching works
                 self.print_all_process_details();
                 println!();
@@ -84,20 +85,15 @@ impl Scheduler {
     //     }
     // }
 
-    pub fn add_process(&mut self, f: fn()) {
+    pub fn add_process(&mut self, f: fn(),) {
         self.process_table.push(ProcessBlock::new(
             ProcessState::Ready,
             self.total_number_of_processes,
-            worker_functions::loop_print_text_1,
+            f,
         ));
 
         self.total_number_of_processes += 1;
-
-        // The thread shouldn't run the minute it is a launched, it should only run when the
-        // scheduler puts it in the Running state
-        let last_proc = self.process_table.len() - 1;
-
-        self.process_table[last_proc].launch(f);
+        self.process_table[self.process_table.len() - 1].launch();
     }
 
     pub fn print_all_process_details(&self) {
