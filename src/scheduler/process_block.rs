@@ -1,9 +1,9 @@
 pub mod worker_functions;
 
 use std::sync::Arc;
-use worker_functions::*;
+// use worker_functions::*;
 use std::thread::{self, *};
-use std::time;
+// use std::time;
 use std::sync::atomic::AtomicBool;
 
 #[derive(Clone)]
@@ -19,7 +19,6 @@ pub struct ProcessBlock  {
     process_id: u32,
     thread_handle_option: Option<JoinHandle<(fn())>>,
     should_run_atomic_bool: Arc<AtomicBool>,
-    func: fn() -> (),
 }
 
 impl ProcessBlock {
@@ -29,12 +28,11 @@ impl ProcessBlock {
             process_id: id,
             thread_handle_option: None,
             should_run_atomic_bool: Arc::new(AtomicBool::new(false)),
-            func: f,
         }
     }
 
-    pub fn launch(&mut self) {
-        self.thread_handle_option = Some(thread::spawn(|| self.func));
+    pub fn launch(&mut self, f: fn()) {
+        self.thread_handle_option = Some(thread::spawn(move || f));
     }
 
     pub fn pause() {

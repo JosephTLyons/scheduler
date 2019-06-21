@@ -6,7 +6,7 @@ pub use process_block::ProcessState;
 use std::thread::JoinHandle;
 // use std::thread::Thread;
 use std::{thread, time};
-use std::sync::atomic::AtomicBool;
+// use std::sync::atomic::AtomicBool;
 
 enum SchedulerState {
     Running,
@@ -84,7 +84,7 @@ impl Scheduler {
     //     }
     // }
 
-    pub fn add_process(&mut self) {
+    pub fn add_process(&mut self, f: fn()) {
         self.process_table.push(ProcessBlock::new(
             ProcessState::Ready,
             self.total_number_of_processes,
@@ -97,13 +97,7 @@ impl Scheduler {
         // scheduler puts it in the Running state
         let last_proc = self.process_table.len() - 1;
 
-        if self.process_table[last_proc].get_process_id() % 2 == 0 {
-            self.process_table[last_proc].launch();
-        }
-
-        else {
-            self.process_table[last_proc].launch();
-        }
+        self.process_table[last_proc].launch(f);
     }
 
     pub fn print_all_process_details(&self) {
